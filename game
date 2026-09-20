@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Math & Science Week Quiz</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,600;0,800;1,400&family=Playfair+Display:ital,wght@0,600;0,800;1,600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #0d1a12;
+      --card-bg: #132419;
+      --ink: #f0fdf4;
+      --muted: #86efac;
+      --border: #a3e635;
+      --primary: #84cc16;
+      --accent-yellow-green: #ccff00;
+      --card-alt: #1a3323;
+      --correct-bg: #143820;
+      --incorrect-bg: #381414;
+      --incorrect-border: #f87171;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--ink);
+      background-color: var(--bg);
+      background-image: 
+        linear-gradient(to right, rgba(163, 230, 53, 0.08) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(163, 230, 53, 0.08) 1px, transparent 1px);
+      background-size: 28px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 680px;
+    }
+
+    .journal-header {
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 12px;
+      margin-bottom: 24px;
+    }
+
+    .journal-header h1 {
+      font-family: 'Playfair Display', serif;
+      font-weight: 800;
+      font-size: clamp(1.6rem, 5vw, 2.2rem);
+      letter-spacing: -0.5px;
+      color: var(--accent-yellow-green);
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      box-shadow: 6px 6px 0px var(--border);
+      padding: clamp(24px, 5vw, 36px);
+      position: relative;
+    }
+
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.4rem, 4vw, 1.8rem);
+      margin-bottom: 12px;
+      color: var(--ink);
+    }
+
+    .description {
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+    }
+
+    .rules {
+      list-style: none;
+      margin: 20px 0;
+      border-top: 1px solid var(--card-alt);
+    }
+
+    .rules li {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--card-alt);
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .rules li::before {
+      content: "—";
+      color: var(--accent-yellow-green);
+      font-weight: bold;
+    }
+
+    .button {
+      border: 2px solid var(--border);
+      padding: 14px 20px;
+      background: var(--card-alt);
+      color: var(--ink);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      box-shadow: 3px 3px 0px var(--border);
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background-color 0.1s ease;
+    }
+
+    .button:hover {
+      background: var(--accent-yellow-green);
+      color: #0d1a12;
+      transform: translate(-1px, -1px);
+      box-shadow: 4px 4px 0px var(--border);
+    }
+
+    .button:active {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0px var(--border);
+    }
+
+    .button.full {
+      width: 100%;
+    }
+
+    .topline {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      margin-bottom: 12px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .progress-track {
+      height: 6px;
+      width: 100%;
+      background: var(--card-alt);
+      border: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 10%;
+      background: var(--accent-yellow-green);
+      transition: width 0.2s ease;
+    }
+
+    .question {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.2rem, 3.5vw, 1.5rem);
+      line-height: 1.4;
+      margin-bottom: 24px;
+      color: var(--ink);
+    }
+
+    .answers {
+      display: grid;
+      gap: 12px;
+    }
+
+    .answer {
+      width: 100%;
+      text-align: left;
+      border: 1.5px solid var(--border);
+      background: var(--card-alt);
+      color: var(--ink);
+      padding: 14px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.88rem;
+      cursor: pointer;
+      box-shadow: 2px 2px 0px var(--border);
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background-color 0.1s ease;
+    }
+
+    .answer:hover:not(:disabled) {
+      background: var(--accent-yellow-green);
+      color: #0d1a12;
+      transform: translate(-1px, -1px);
+      box-shadow: 3px 3px 0px var(--border);
+    }
+
+    .answer:disabled {
+      cursor: default;
+    }
+
+    .answer.correct {
+      background: var(--correct-bg) !important;
+      border-color: var(--accent-yellow-green);
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .answer.incorrect {
+      background: var(--incorrect-bg) !important;
+      border-color: var(--incorrect-border);
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .feedback {
+      min-height: 24px;
+      margin-top: 18px;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      padding: 10px 12px;
+      border-left: 3px solid transparent;
+    }
+
+    .feedback.correct-text {
+      background: var(--correct-bg);
+      border-left-color: var(--accent-yellow-green);
+      color: var(--ink);
+    }
+
+    .feedback.incorrect-text {
+      background: var(--incorrect-bg);
+      border-left-color: var(--incorrect-border);
+      color: var(--ink);
+    }
+
+    .bottom-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+
+    .score {
+      font-family: 'Playfair Display', serif;
+      text-align: center;
+      font-size: 3.5rem;
+      font-weight: 800;
+      margin: 12px 0;
+      color: var(--accent-yellow-green);
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .summary-box {
+      background: var(--card-alt);
+      border: 1px solid var(--border);
+      padding: 12px 8px;
+      text-align: center;
+    }
+
+    .summary-box strong {
+      display: block;
+      font-size: 1.3rem;
+      margin-bottom: 2px;
+      color: var(--accent-yellow-green);
+    }
+
+    .summary-box span {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 520px) {
+      body {
+        padding: 16px;
+      }
+      .card {
+        padding: 20px 16px;
+      }
+      .summary {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <header class="journal-header">
+      <h1>Math & Science Week</h1>
+    </header>
+
+    <section class="card">
+      <!-- Welcome Screen -->
+      <div id="welcome-screen" class="screen active">
+        <h2>Math & Science Trivia</h2>
+
+        <ul class="rules">
+          <li>10 questions</li>
+          <li>1 point per correct answer</li>
+        </ul>
+
+        <button id="start-button" class="button full">Begin Quiz</button>
+      </div>
+
+      <!-- Quiz Screen -->
+      <div id="quiz-screen" class="screen">
+        <div class="topline">
+          <span id="question-counter">Q 01 / 10</span>
+        </div>
+
+        <div class="progress-track" aria-label="Quiz progress">
+          <div id="progress-bar" class="progress-bar"></div>
+        </div>
+
+        <h2 id="question-text" class="question">
+          Question text loading...
+        </h2>
+
+        <div id="answers-container" class="answers"></div>
+
+        <div id="feedback" class="feedback" aria-live="polite"></div>
+
+        <div class="bottom-row">
+          <button id="next-button" class="button" hidden>
+            Next Question →
+          </button>
+        </div>
+      </div>
+
+      <!-- Result Screen -->
+      <div id="result-screen" class="screen">
+        <h2>Evaluation Complete</h2>
+        <div id="score-display" class="score">0/10</div>
+        <p id="result-message" class="description" style="text-align: center;"></p>
+
+        <div class="summary">
+          <div class="summary-box">
+            <strong id="correct-count">0</strong>
+            <span>Correct</span>
+          </div>
+          <div class="summary-box">
+            <strong id="incorrect-count">0</strong>
+            <span>Incorrect</span>
+          </div>
+          <div class="summary-box">
+            <strong id="percentage">0%</strong>
+            <span>Score</span>
+          </div>
+        </div>
+
+        <button id="restart-button" class="button full">
+          Retake Quiz
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const questions = [
+      {
+        question: "Solve for x: 3x - 7 = 11",
+        options: ["x = 4", "x = 6", "x = 5", "x = 18"],
+        correct: 1,
+        explanation: "Add 7 to both sides (3x = 18), then divide by 3 to get x = 6."
+      },
+      {
+        question: "What is the chemical formula for table salt?",
+        options: ["KCl", "NaCl", "NaOH", "HCl"],
+        correct: 1,
+        explanation: "Sodium chloride (NaCl) is the ionic compound known as table salt."
+      },
+      {
+        question: "What is the acceleration due to gravity on Earth's surface?",
+        options: ["8.9 m/s²", "9.8 m/s²", "10.5 m/s²", "12.0 m/s²"],
+        correct: 1,
+        explanation: "Standard gravity on Earth is approximately 9.8 m/s²."
+      },
+      {
+        question: "Which organelle is known as the powerhouse of the cell?",
+        options: ["Ribosome", "Nucleus", "Mitochondrion", "Chloroplast"],
+        correct: 2,
+        explanation: "Mitochondria produce cellular ATP through respiration."
+      },
+      {
+        question: "What is the area of a right triangle with a base of 6 cm and height of 8 cm?",
+        options: ["48 cm²", "24 cm²", "14 cm²", "28 cm²"],
+        correct: 1,
+        explanation: "Area = (1/2) × base × height = 0.5 × 6 × 8 = 24 cm²."
+      },
+      {
+        question: "A solution with a pH of 3 is classified as what?",
+        options: ["Neutral", "Basic", "Acidic", "Alkaline"],
+        correct: 2,
+        explanation: "Solutions with a pH less than 7 are acidic."
+      },
+      {
+        question: "Which equation represents Newton's Second Law of Motion?",
+        options: ["E = mc²", "F = ma", "P = IV", "v = d / t"],
+        correct: 1,
+        explanation: "Force equals mass times acceleration (F = ma)."
+      },
+      {
+        question: "What are the building blocks of proteins?",
+        options: ["Nucleotides", "Monosaccharides", "Amino acids", "Fatty acids"],
+        correct: 2,
+        explanation: "Proteins are composed of chains of amino acids linked by peptide bonds."
+      },
+      {
+        question: "What is the slope of the line given by y = -2x + 5?",
+        options: ["5", "2", "-2", "-5"],
+        correct: 2,
+        explanation: "In slope-intercept form (y = mx + b), the slope m is -2."
+      },
+      {
+        question: "Which gas makes up approximately 78% of Earth's atmosphere?",
+        options: ["Oxygen", "Carbon dioxide", "Nitrogen", "Argon"],
+        correct: 2,
+        explanation: "Earth's atmosphere is roughly 78% nitrogen and 21% oxygen."
+      }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    let answered = false;
+
+    const welcomeScreen = document.getElementById("welcome-screen");
+    const quizScreen = document.getElementById("quiz-screen");
+    const resultScreen = document.getElementById("result-screen");
+
+    const questionCounter = document.getElementById("question-counter");
+    const progressBar = document.getElementById("progress-bar");
+    const questionText = document.getElementById("question-text");
+    const answersContainer = document.getElementById("answers-container");
+    const feedback = document.getElementById("feedback");
+    const nextButton = document.getElementById("next-button");
+
+    const scoreDisplay = document.getElementById("score-display");
+    const correctCount = document.getElementById("correct-count");
+    const incorrectCount = document.getElementById("incorrect-count");
+    const percentage = document.getElementById("percentage");
+    const resultMessage = document.getElementById("result-message");
+
+    function showScreen(screenToShow) {
+      [welcomeScreen, quizScreen, resultScreen].forEach(screen => {
+        screen.classList.remove("active");
+      });
+      screenToShow.classList.add("active");
+    }
+
+    function startQuiz() {
+      currentQuestion = 0;
+      score = 0;
+      answered = false;
+      showScreen(quizScreen);
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      const q = questions[currentQuestion];
+
+      answered = false;
+      questionCounter.textContent = `Q ${String(currentQuestion + 1).padStart(2, '0')} / ${questions.length}`;
+      progressBar.style.width = `${((currentQuestion + 1) / questions.length) * 100}%`;
+      questionText.textContent = q.question;
+
+      answersContainer.innerHTML = "";
+      feedback.textContent = "";
+      feedback.className = "feedback";
+      nextButton.hidden = true;
+
+      q.options.forEach((option, index) => {
+        const btn = document.createElement("button");
+        btn.className = "answer";
+        btn.type = "button";
+        btn.textContent = `${String.fromCharCode(65 + index)}. ${option}`;
+
+        btn.addEventListener("click", () => {
+          checkAnswer(index, btn);
+        });
+
+        answersContainer.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(selectedIndex, selectedBtn) {
+      if (answered) return;
+
+      answered = true;
+      const q = questions[currentQuestion];
+      const answerButtons = document.querySelectorAll(".answer");
+
+      answerButtons.forEach(btn => {
+        btn.disabled = true;
+      });
+
+      answerButtons[q.correct].classList.add("correct");
+
+      if (selectedIndex === q.correct) {
+        score++;
+        selectedBtn.classList.add("correct");
+        feedback.textContent = `Correct. ${q.explanation}`;
+        feedback.classList.add("correct-text");
+      } else {
+        selectedBtn.classList.add("incorrect");
+        feedback.textContent = `Incorrect. ${q.explanation}`;
+        feedback.classList.add("incorrect-text");
+      }
+
+      nextButton.hidden = false;
+      nextButton.textContent = (currentQuestion === questions.length - 1) ? "View Results →" : "Next Question →";
+    }
+
+    function nextQuestion() {
+      if (!answered) return;
+
+      currentQuestion++;
+      if (currentQuestion < questions.length) {
+        loadQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    function showResults() {
+      const total = questions.length;
+      const incorrect = total - score;
+      const pct = Math.round((score / total) * 100);
+
+      scoreDisplay.textContent = `${score}/${total}`;
+      correctCount.textContent = score;
+      incorrectCount.textContent = incorrect;
+      percentage.textContent = `${pct}%`;
+
+      if (pct === 100) {
+        resultMessage.textContent = "Perfect score.";
+      } else if (pct >= 70) {
+        resultMessage.textContent = "Good score.";
+      } else {
+        resultMessage.textContent = "Fail.";
+      }
+
+      showScreen(resultScreen);
+    }
+
+    document.getElementById("start-button").addEventListener("click", startQuiz);
+    nextButton.addEventListener("click", nextQuestion);
+    document.getElementById("restart-button").addEventListener("click", startQuiz);
+  </script>
+</body>
+</html>
