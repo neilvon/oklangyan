@@ -3,11 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Math & Science Week Quiz</title>
+  <title>Math & Science Week Trivia</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,600;0,800;1,400&family=Playfair+Display:ital,wght@0,600;0,800;1,600&display=swap" rel="stylesheet">
+
+  <!-- Canvas Confetti Library CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 
   <style>
     :root {
@@ -146,9 +149,23 @@
       width: 100%;
     }
 
+    .btn-grid-level {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .btn-grid-grades {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+
     .topline {
       display: flex;
-      justify-content: flex-start;
+      justify-content: space-between;
       align-items: center;
       margin-bottom: 12px;
       font-size: 0.8rem;
@@ -294,6 +311,9 @@
       .card {
         padding: 20px 16px;
       }
+      .btn-grid-level {
+        grid-template-columns: 1fr;
+      }
       .summary {
         grid-template-columns: 1fr;
       }
@@ -308,7 +328,7 @@
     </header>
 
     <section class="card">
-      <!-- Welcome Screen -->
+      <!-- 1. Welcome Screen -->
       <div id="welcome-screen" class="screen active">
         <h2>Math & Science Trivia</h2>
 
@@ -320,9 +340,29 @@
         <button id="start-button" class="button full">Begin Quiz</button>
       </div>
 
-      <!-- Quiz Screen -->
+      <!-- 2. Level Selection Screen -->
+      <div id="level-screen" class="screen">
+        <h2>Select Level</h2>
+        <p class="description">Choose your academic track:</p>
+
+        <div class="btn-grid-level">
+          <button id="btn-elem" class="button">Elem</button>
+          <button id="btn-hs" class="button">High School</button>
+        </div>
+      </div>
+
+      <!-- 3. Grade Selection Screen -->
+      <div id="grade-screen" class="screen">
+        <h2 id="grade-heading">Select Grade</h2>
+        <p class="description">Pick your current grade level:</p>
+
+        <div id="grade-options" class="btn-grid-grades"></div>
+      </div>
+
+      <!-- 4. Quiz Screen -->
       <div id="quiz-screen" class="screen">
         <div class="topline">
+          <span id="grade-badge">Grade X</span>
           <span id="question-counter">Q 01 / 10</span>
         </div>
 
@@ -331,7 +371,7 @@
         </div>
 
         <h2 id="question-text" class="question">
-          Question text loading...
+          Loading questions...
         </h2>
 
         <div id="answers-container" class="answers"></div>
@@ -345,9 +385,9 @@
         </div>
       </div>
 
-      <!-- Result Screen -->
+      <!-- 5. Result Screen -->
       <div id="result-screen" class="screen">
-        <h2>Evaluation Complete</h2>
+        <p id="result-grade-tag" class="description" style="text-align: center; margin-bottom: 0;"></p>
         <div id="score-display" class="score">0/10</div>
         <p id="result-message" class="description" style="text-align: center;"></p>
 
@@ -373,78 +413,676 @@
     </section>
   </main>
 
-  <script>
-    const questions = [
-      {
-        question: "Solve for x: 3x - 7 = 11",
-        options: ["x = 4", "x = 6", "x = 5", "x = 18"],
-        correct: 1,
-        explanation: "Add 7 to both sides (3x = 18), then divide by 3 to get x = 6."
-      },
-      {
-        question: "What is the chemical formula for table salt?",
-        options: ["KCl", "NaCl", "NaOH", "HCl"],
-        correct: 1,
-        explanation: "Sodium chloride (NaCl) is the ionic compound known as table salt."
-      },
-      {
-        question: "What is the acceleration due to gravity on Earth's surface?",
-        options: ["8.9 m/s²", "9.8 m/s²", "10.5 m/s²", "12.0 m/s²"],
-        correct: 1,
-        explanation: "Standard gravity on Earth is approximately 9.8 m/s²."
-      },
-      {
-        question: "Which organelle is known as the powerhouse of the cell?",
-        options: ["Ribosome", "Nucleus", "Mitochondrion", "Chloroplast"],
-        correct: 2,
-        explanation: "Mitochondria produce cellular ATP through respiration."
-      },
-      {
-        question: "What is the area of a right triangle with a base of 6 cm and height of 8 cm?",
-        options: ["48 cm²", "24 cm²", "14 cm²", "28 cm²"],
-        correct: 1,
-        explanation: "Area = (1/2) × base × height = 0.5 × 6 × 8 = 24 cm²."
-      },
-      {
-        question: "A solution with a pH of 3 is classified as what?",
-        options: ["Neutral", "Basic", "Acidic", "Alkaline"],
-        correct: 2,
-        explanation: "Solutions with a pH less than 7 are acidic."
-      },
-      {
-        question: "Which equation represents Newton's Second Law of Motion?",
-        options: ["E = mc²", "F = ma", "P = IV", "v = d / t"],
-        correct: 1,
-        explanation: "Force equals mass times acceleration (F = ma)."
-      },
-      {
-        question: "What are the building blocks of proteins?",
-        options: ["Nucleotides", "Monosaccharides", "Amino acids", "Fatty acids"],
-        correct: 2,
-        explanation: "Proteins are composed of chains of amino acids linked by peptide bonds."
-      },
-      {
-        question: "What is the slope of the line given by y = -2x + 5?",
-        options: ["5", "2", "-2", "-5"],
-        correct: 2,
-        explanation: "In slope-intercept form (y = mx + b), the slope m is -2."
-      },
-      {
-        question: "Which gas makes up approximately 78% of Earth's atmosphere?",
-        options: ["Oxygen", "Carbon dioxide", "Nitrogen", "Argon"],
-        correct: 2,
-        explanation: "Earth's atmosphere is roughly 78% nitrogen and 21% oxygen."
-      }
-    ];
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+    import { 
+      getFirestore, 
+      collection, 
+      query, 
+      where, 
+      getDocs, 
+      addDoc 
+    } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
+    const firebaseConfig = {
+      apiKey: "AIzaSyBUFP43TINr0QMMwY7WNBI-Hd-UwSg6Ov0",
+      authDomain: "quizapp-d936e.firebaseapp.com",
+      projectId: "quizapp-d936e",
+      storageBucket: "quizapp-d936e.firebasestorage.app",
+      messagingSenderId: "115463484112",
+      appId: "1:115463484112:web:4d09fef8fc9a11981aa4d5"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Confetti Celebration Helper Function
+    function triggerConfetti() {
+      const duration = 2.5 * 1000;
+      const end = Date.now() + duration;
+
+      (function frame() {
+        confetti({
+          particleCount: 4,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 },
+          colors: ['#a3e635', '#84cc16', '#ccff00', '#ffffff']
+        });
+        confetti({
+          particleCount: 4,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 },
+          colors: ['#a3e635', '#84cc16', '#ccff00', '#ffffff']
+        });
+
+        if (Date.now() < end) {
+          requestAnimationFrame(frame);
+        }
+      })();
+    }
+
+    // Utility: Fisher-Yates array randomizer
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    // Complete dataset featuring completely unique questions per set
+    function generateComprehensiveQuestionDataset() {
+      const data = [];
+
+      const rawQuestionsByGrade = {
+        1: [
+          // Set 1
+          [
+            { q: "[Math] What is 5 + 3?", correct: "8", distractors: ["7", "9", "6"] },
+            { q: "[Math] What is 10 - 4?", correct: "6", distractors: ["5", "7", "4"] },
+            { q: "[Math] What is 7 + 2?", correct: "9", distractors: ["8", "10", "11"] },
+            { q: "[Math] What is 15 - 5?", correct: "10", distractors: ["5", "9", "11"] },
+            { q: "[Math] What is 4 + 4?", correct: "8", distractors: ["6", "7", "10"] },
+            { q: "[Science] What do plants need to grow?", correct: "Sunlight and water", distractors: ["Milk and bread", "Juice and soil", "Plastic and wind"] },
+            { q: "[Science] What body part is used to see?", correct: "Eyes", distractors: ["Ears", "Nose", "Hands"] },
+            { q: "[Science] Which animal lays eggs?", correct: "Chicken", distractors: ["Dog", "Cat", "Cow"] },
+            { q: "[Science] Which sense organ is used to smell?", correct: "Nose", distractors: ["Tongue", "Skin", "Eyes"] },
+            { q: "[Science] Water turns into ice when it gets very...", correct: "Cold", distractors: ["Hot", "Warm", "Dry"] }
+          ],
+          // Set 2
+          [
+            { q: "[Math] What is 6 + 4?", correct: "10", distractors: ["8", "9", "12"] },
+            { q: "[Math] What is 12 - 3?", correct: "9", distractors: ["8", "10", "7"] },
+            { q: "[Math] What is 3 + 8?", correct: "11", distractors: ["10", "12", "14"] },
+            { q: "[Math] What is 16 - 8?", correct: "8", distractors: ["6", "7", "9"] },
+            { q: "[Math] What is 9 + 5?", correct: "14", distractors: ["13", "15", "12"] },
+            { q: "[Science] What do fish use to breathe underwater?", correct: "Gills", distractors: ["Lungs", "Fins", "Scales"] },
+            { q: "[Science] What gives us warmth and light during the day?", correct: "Sun", distractors: ["Moon", "Stars", "Clouds"] },
+            { q: "[Science] Which of these is a solid object?", correct: "Rock", distractors: ["Water", "Air", "Milk"] },
+            { q: "[Science] What covers a bird's body?", correct: "Feathers", distractors: ["Fur", "Scales", "Shells"] },
+            { q: "[Science] Which animal lives in a hive?", correct: "Bee", distractors: ["Ant", "Spider", "Worm"] }
+          ],
+          // Set 3
+          [
+            { q: "[Math] What is 11 + 4?", correct: "15", distractors: ["14", "16", "13"] },
+            { q: "[Math] What is 14 - 6?", correct: "8", distractors: ["7", "9", "10"] },
+            { q: "[Math] What is 2 + 9?", correct: "11", distractors: ["10", "12", "13"] },
+            { q: "[Math] What is 18 - 9?", correct: "9", distractors: ["8", "10", "11"] },
+            { q: "[Math] What is 7 + 6?", correct: "13", distractors: ["12", "14", "11"] },
+            { q: "[Science] What part of a plant is under the ground?", correct: "Roots", distractors: ["Leaves", "Stem", "Flower"] },
+            { q: "[Science] Which organ is used to hear sound?", correct: "Ears", distractors: ["Eyes", "Nose", "Skin"] },
+            { q: "[Science] Which animal has fur?", correct: "Bear", distractors: ["Snake", "Frog", "Goldfish"] },
+            { q: "[Science] Rain comes from...", correct: "Clouds", distractors: ["Trees", "Ocean floor", "Mountains"] },
+            { q: "[Science] A tadpole grows up to become a...", correct: "Frog", distractors: ["Fish", "Lizard", "Turtle"] }
+          ],
+          // Set 4
+          [
+            { q: "[Math] What is 8 + 8?", correct: "16", distractors: ["14", "15", "17"] },
+            { q: "[Math] What is 20 - 5?", correct: "15", distractors: ["10", "14", "16"] },
+            { q: "[Math] What is 13 + 3?", correct: "16", distractors: ["15", "17", "18"] },
+            { q: "[Math] What is 17 - 4?", correct: "13", distractors: ["11", "12", "14"] },
+            { q: "[Math] What is 5 + 7?", correct: "12", distractors: ["11", "13", "10"] },
+            { q: "[Science] What is the young of a dog called?", correct: "Puppy", distractors: ["Kitten", "Cub", "Calf"] },
+            { q: "[Science] Which planet do we live on?", correct: "Earth", distractors: ["Mars", "Jupiter", "Venus"] },
+            { q: "[Science] Steam is water in the form of a...", correct: "Gas", distractors: ["Solid", "Liquid", "Ice"] },
+            { q: "[Science] Which body part handles touch?", correct: "Skin", distractors: ["Eyes", "Ears", "Nose"] },
+            { q: "[Science] Leaves are green because of...", correct: "Chlorophyll", distractors: ["Water", "Soil", "Oxygen"] }
+          ]
+        ],
+        2: [
+          // Set 1
+          [
+            { q: "[Math] What is 25 + 14?", correct: "39", distractors: ["38", "40", "35"] },
+            { q: "[Math] What is 50 - 18?", correct: "32", distractors: ["30", "38", "34"] },
+            { q: "[Math] What is 4 × 5?", correct: "20", distractors: ["25", "16", "24"] },
+            { q: "[Math] What is 18 ÷ 2?", correct: "9", distractors: ["8", "7", "6"] },
+            { q: "[Math] What is 36 + 24?", correct: "60", distractors: ["50", "64", "58"] },
+            { q: "[Science] Animals without backbones are called...", correct: "Invertebrates", distractors: ["Vertebrates", "Mammals", "Amphibians"] },
+            { q: "[Science] What shape best describes planet Earth?", correct: "Oblate Spheroid", distractors: ["Flat Disk", "Cube", "Cylinder"] },
+            { q: "[Science] The process of solid changing to liquid is...", correct: "Melting", distractors: ["Freezing", "Evaporation", "Condensation"] },
+            { q: "[Science] What central organ pumps blood?", correct: "Heart", distractors: ["Lungs", "Liver", "Stomach"] },
+            { q: "[Science] Which state of matter keeps its shape?", correct: "Solid", distractors: ["Liquid", "Gas", "Plasma"] }
+          ],
+          // Set 2
+          [
+            { q: "[Math] What is 42 + 23?", correct: "65", distractors: ["63", "67", "61"] },
+            { q: "[Math] What is 60 - 25?", correct: "35", distractors: ["30", "40", "25"] },
+            { q: "[Math] What is 3 × 7?", correct: "21", distractors: ["24", "18", "28"] },
+            { q: "[Math] What is 24 ÷ 4?", correct: "6", distractors: ["8", "7", "5"] },
+            { q: "[Math] What is 15 + 27?", correct: "42", distractors: ["38", "40", "45"] },
+            { q: "[Science] What gas do humans breathe in to live?", correct: "Oxygen", distractors: ["Carbon Dioxide", "Nitrogen", "Helium"] },
+            { q: "[Science] The human frame made of bones is called the...", correct: "Skeletal System", distractors: ["Muscular System", "Nervous System", "Digestive System"] },
+            { q: "[Science] Caterpillars transform into...", correct: "Butterflies", distractors: ["Beetles", "Dragonflies", "Grasshoppers"] },
+            { q: "[Science] Main energy source for Earth's weather is...", correct: "The Sun", distractors: ["The Moon", "Volcanoes", "Ocean currents"] },
+            { q: "[Science] When liquid water boils, it becomes a...", correct: "Gas", distractors: ["Solid", "Plasma", "Crystal"] }
+          ],
+          // Set 3
+          [
+            { q: "[Math] What is 58 + 26?", correct: "84", distractors: ["82", "86", "74"] },
+            { q: "[Math] What is 75 - 32?", correct: "43", distractors: ["41", "45", "33"] },
+            { q: "[Math] What is 5 × 6?", correct: "30", distractors: ["25", "35", "40"] },
+            { q: "[Math] What is 32 ÷ 4?", correct: "8", distractors: ["6", "7", "9"] },
+            { q: "[Math] What is 49 + 18?", correct: "67", distractors: ["65", "68", "57"] },
+            { q: "[Science] What materials do magnets attract?", correct: "Iron", distractors: ["Plastic", "Wood", "Glass"] },
+            { q: "[Science] Which animal lives both on land and water?", correct: "Amphibian", distractors: ["Reptile", "Bird", "Fish"] },
+            { q: "[Science] What product do bees gather nectar to make?", correct: "Honey", distractors: ["Wax", "Milk", "Syrup"] },
+            { q: "[Science] Sound travels through air in...", correct: "Waves", distractors: ["Rays", "Beams", "Particles only"] },
+            { q: "[Science] Night occurs when our part of Earth faces...", correct: "Away from the Sun", distractors: ["Toward the Sun", "Toward the Moon", "Into deep space"] }
+          ],
+          // Set 4
+          [
+            { q: "[Math] What is 63 + 19?", correct: "82", distractors: ["80", "81", "83"] },
+            { q: "[Math] What is 84 - 37?", correct: "47", distractors: ["45", "49", "57"] },
+            { q: "[Math] What is 6 × 4?", correct: "24", distractors: ["20", "28", "18"] },
+            { q: "[Math] What is 40 ÷ 5?", correct: "8", distractors: ["7", "9", "6"] },
+            { q: "[Math] What is 38 + 29?", correct: "67", distractors: ["65", "66", "68"] },
+            { q: "[Science] Which organ controls thoughts and movement?", correct: "Brain", distractors: ["Heart", "Lungs", "Stomach"] },
+            { q: "[Science] Green plants make their own food through...", correct: "Photosynthesis", distractors: ["Respiration", "Digestion", "Absorption"] },
+            { q: "[Science] A shadow is created when light is...", correct: "Blocked", distractors: ["Reflected", "Bent", "Amplified"] },
+            { q: "[Science] The Earth orbits around the...", correct: "Sun", distractors: ["Moon", "Mars", "Polaris"] },
+            { q: "[Science] Puddles disappearing in heat is due to...", correct: "Evaporation", distractors: ["Condensation", "Melting", "Freezing"] }
+          ]
+        ],
+        3: [
+          // Set 1
+          [
+            { q: "[Math] What is 125 + 245?", correct: "370", distractors: ["360", "380", "375"] },
+            { q: "[Math] What is 500 - 175?", correct: "325", distractors: ["315", "335", "300"] },
+            { q: "[Math] What is 7 × 8?", correct: "56", distractors: ["54", "64", "48"] },
+            { q: "[Math] What is 81 ÷ 9?", correct: "9", distractors: ["8", "7", "10"] },
+            { q: "[Math] What is 1/2 of 50?", correct: "25", distractors: ["20", "30", "15"] },
+            { q: "[Science] Water turning into clouds is part of the...", correct: "Water Cycle", distractors: ["Rock Cycle", "Carbon Cycle", "Nitrogen Cycle"] },
+            { q: "[Science] Animals that eat only plants are...", correct: "Herbivores", distractors: ["Carnivores", "Omnivores", "Decomposers"] },
+            { q: "[Science] What outermost layer of Earth do we stand on?", correct: "Crust", distractors: ["Mantle", "Outer Core", "Inner Core"] },
+            { q: "[Science] Light travels in...", correct: "Straight lines", distractors: ["Zig-zag lines", "Circles", "Curved arcs"] },
+            { q: "[Science] What organs filter waste from the blood?", correct: "Kidneys", distractors: ["Lungs", "Stomach", "Heart"] }
+          ],
+          // Set 2
+          [
+            { q: "[Math] What is 310 + 190?", correct: "500", distractors: ["490", "510", "480"] },
+            { q: "[Math] What is 450 - 210?", correct: "240", distractors: ["230", "250", "220"] },
+            { q: "[Math] What is 9 × 6?", correct: "54", distractors: ["56", "48", "63"] },
+            { q: "[Math] What is 64 ÷ 8?", correct: "8", distractors: ["7", "9", "6"] },
+            { q: "[Math] What is 1/4 of 100?", correct: "25", distractors: ["20", "50", "15"] },
+            { q: "[Science] Animals that eat only meat are...", correct: "Carnivores", distractors: ["Herbivores", "Omnivores", "Producers"] },
+            { q: "[Science] Instrument used to measure temperature?", correct: "Thermometer", distractors: ["Barometer", "Speedometer", "Scale"] },
+            { q: "[Science] What gas makes up most of Earth's atmosphere?", correct: "Nitrogen", distractors: ["Oxygen", "Carbon Dioxide", "Hydrogen"] },
+            { q: "[Science] Planet closest to the Sun?", correct: "Mercury", distractors: ["Venus", "Earth", "Mars"] },
+            { q: "[Science] Plant seeds require water, oxygen, and...", correct: "Warmth", distractors: ["Fertilizer", "Direct light", "Ice"] }
+          ],
+          // Set 3
+          [
+            { q: "[Math] What is 275 + 125?", correct: "400", distractors: ["390", "410", "380"] },
+            { q: "[Math] What is 620 - 310?", correct: "310", distractors: ["300", "320", "290"] },
+            { q: "[Math] What is 8 × 8?", correct: "64", distractors: ["56", "72", "60"] },
+            { q: "[Math] What is 42 ÷ 6?", correct: "7", distractors: ["6", "8", "9"] },
+            { q: "[Math] What is 1/3 of 90?", correct: "30", distractors: ["25", "35", "20"] },
+            { q: "[Science] Animals that eat both plants and animals?", correct: "Omnivores", distractors: ["Herbivores", "Carnivores", "Scavengers"] },
+            { q: "[Science] Dark organic material in soil from decayed plants?", correct: "Humus", distractors: ["Clay", "Sand", "Silt"] },
+            { q: "[Science] How many legs do all insects have?", correct: "6", distractors: ["8", "10", "4"] },
+            { q: "[Science] Standard ruler unit for small lengths?", correct: "Centimeter", distractors: ["Kilometer", "Gram", "Liter"] },
+            { q: "[Science] Known as the 'Red Planet'?", correct: "Mars", distractors: ["Jupiter", "Venus", "Saturn"] }
+          ],
+          // Set 4
+          [
+            { q: "[Math] What is 180 + 320?", correct: "500", distractors: ["480", "520", "490"] },
+            { q: "[Math] What is 750 - 250?", correct: "500", distractors: ["450", "550", "400"] },
+            { q: "[Math] What is 6 × 7?", correct: "42", distractors: ["48", "36", "49"] },
+            { q: "[Math] What is 56 ÷ 7?", correct: "8", distractors: ["7", "9", "6"] },
+            { q: "[Math] What is 1/5 of 100?", correct: "20", distractors: ["25", "15", "10"] },
+            { q: "[Science] What green pigment absorbs light in plants?", correct: "Chlorophyll", distractors: ["Melanin", "Carotene", "Hemoglobin"] },
+            { q: "[Science] Spiders are classified as...", correct: "Arachnids", distractors: ["Insects", "Crustaceans", "Mollusks"] },
+            { q: "[Science] The force that resists sliding between surfaces?", correct: "Friction", distractors: ["Gravity", "Magnetism", "Tension"] },
+            { q: "[Science] Condensation turns water vapor into...", correct: "Liquid", distractors: ["Solid", "Gas", "Plasma"] },
+            { q: "[Science] Body system that breaks down food for nutrients?", correct: "Digestive System", distractors: ["Circulatory System", "Nervous System", "Respiratory System"] }
+          ]
+        ],
+        4: [
+          // Set 1
+          [
+            { q: "[Math] What is 3,450 + 2,180?", correct: "5,630", distractors: ["5,530", "5,620", "5,730"] },
+            { q: "[Math] What is 144 ÷ 12?", correct: "12", distractors: ["11", "13", "14"] },
+            { q: "[Math] Perimeter of an 8 cm by 5 cm rectangle?", correct: "26 cm", distractors: ["40 cm", "24 cm", "13 cm"] },
+            { q: "[Math] 2 ¾ expressed as an improper fraction?", correct: "11/4", distractors: ["9/4", "10/4", "8/3"] },
+            { q: "[Math] 0.75 converted to a simple fraction?", correct: "3/4", distractors: ["1/2", "2/3", "4/5"] },
+            { q: "[Science] What stage follows egg in a frog's life cycle?", correct: "Tadpole", distractors: ["Pupa", "Froglet", "Adult"] },
+            { q: "[Science] Materials that allow heat to flow easily are...", correct: "Conductors", distractors: ["Insulators", "Resistors", "Reflectors"] },
+            { q: "[Science] Which plant organ absorbs water and minerals?", correct: "Roots", distractors: ["Leaves", "Stem", "Petals"] },
+            { q: "[Science] Liquid changing to gas at surface is...", correct: "Evaporation", distractors: ["Sublimation", "Melting", "Condensation"] },
+            { q: "[Science] Organisms that eat both plants and meat?", correct: "Omnivores", distractors: ["Herbivores", "Carnivores", "Producers"] }
+          ],
+          // Set 2
+          [
+            { q: "[Math] What is 4,210 + 1,790?", correct: "6,000", distractors: ["5,900", "6,100", "5,800"] },
+            { q: "[Math] What is 169 ÷ 13?", correct: "13", distractors: ["12", "14", "15"] },
+            { q: "[Math] Area of a rectangle 6 cm wide and 4 cm high?", correct: "24 cm²", distractors: ["20 cm²", "10 cm²", "28 cm²"] },
+            { q: "[Math] 3 ½ expressed as an improper fraction?", correct: "7/2", distractors: ["5/2", "6/2", "8/2"] },
+            { q: "[Math] 0.5 converted to a fraction in simplest form?", correct: "1/2", distractors: ["1/4", "3/4", "2/5"] },
+            { q: "[Science] What stage comes right before adult frog?", correct: "Froglet", distractors: ["Tadpole", "Egg", "Pupa"] },
+            { q: "[Science] Materials that impede electric or heat flow?", correct: "Insulators", distractors: ["Conductors", "Radiators", "Semiconductors"] },
+            { q: "[Science] Primary leaf function in green plants?", correct: "Photosynthesis", distractors: ["Anchoring", "Water absorption", "Pollination"] },
+            { q: "[Science] Water vapor cooling into liquid droplets is...", correct: "Condensation", distractors: ["Evaporation", "Freezing", "Transpiration"] },
+            { q: "[Science] Animals that eat strictly plant material?", correct: "Herbivores", distractors: ["Carnivores", "Omnivores", "Decomposers"] }
+          ],
+          // Set 3
+          [
+            { q: "[Math] What is 5,500 - 2,250?", correct: "3,250", distractors: ["3,150", "3,350", "3,000"] },
+            { q: "[Math] What is 225 ÷ 15?", correct: "15", distractors: ["14", "16", "25"] },
+            { q: "[Math] Perimeter of a 10 cm x 10 cm square?", correct: "40 cm", distractors: ["100 cm", "20 cm", "30 cm"] },
+            { q: "[Math] 1 ⅖ as an improper fraction?", correct: "7/5", distractors: ["6/5", "8/5", "5/2"] },
+            { q: "[Math] 0.2 simplified to fraction form?", correct: "1/5", distractors: ["2/5", "1/4", "1/10"] },
+            { q: "[Science] What stage occurs inside a chrysalis?", correct: "Pupa", distractors: ["Larva", "Nymph", "Adult"] },
+            { q: "[Science] Copper is commonly used because it is a great...", correct: "Conductor", distractors: ["Insulator", "Resistor", "Absorber"] },
+            { q: "[Science] What flower part contains reproductive organs?", correct: "Stamen/Pistil", distractors: ["Petal", "Sepal", "Stem"] },
+            { q: "[Science] Water falling as rain, snow, or hail is...", correct: "Precipitation", distractors: ["Transpiration", "Condensation", "Evaporation"] },
+            { q: "[Science] Organisms like mushrooms that break down dead matter?", correct: "Decomposers", distractors: ["Producers", "Herbivores", "Predators"] }
+          ],
+          // Set 4
+          [
+            { q: "[Math] What is 8,900 - 4,450?", correct: "4,450", distractors: ["4,350", "4,550", "4,400"] },
+            { q: "[Math] What is 196 ÷ 14?", correct: "14", distractors: ["13", "15", "16"] },
+            { q: "[Math] Area of a square with 7 cm side length?", correct: "49 cm²", distractors: ["28 cm²", "14 cm²", "56 cm²"] },
+            { q: "[Math] 4 ⅓ written as an improper fraction?", correct: "13/3", distractors: ["12/3", "14/3", "7/3"] },
+            { q: "[Math] 0.4 written as a fraction in simplest terms?", correct: "2/5", distractors: ["4/10", "1/4", "3/5"] },
+            { q: "[Science] Complete metamorphosis consists of how many stages?", correct: "4", distractors: ["3", "2", "5"] },
+            { q: "[Science] Rubber handles on tools act as...", correct: "Insulators", distractors: ["Conductors", "Generators", "Magnets"] },
+            { q: "[Science] What stem vascular structure carries water up?", correct: "Xylem", distractors: ["Phloem", "Stomata", "Chloroplast"] },
+            { q: "[Science] Freezing point of water in Celsius?", correct: "0°C", distractors: ["100°C", "32°C", "-10°C"] },
+            { q: "[Science] Animals that feed on already dead animals are...", correct: "Scavengers", distractors: ["Parasites", "Herbivores", "Producers"] }
+          ]
+        ],
+        5: [
+          // Set 1
+          [
+            { q: "[Math] Solve: 3² + 4 × 2", correct: "17", distractors: ["26", "14", "22"] },
+            { q: "[Math] Add fractions: 2/5 + 1/3", correct: "11/15", distractors: ["3/8", "3/15", "7/15"] },
+            { q: "[Math] Volume of prism 6m long, 4m wide, 3m high?", correct: "72 m³", distractors: ["24 m³", "48 m³", "80 m³"] },
+            { q: "[Math] Calculate 20% of 250", correct: "50", distractors: ["25", "75", "100"] },
+            { q: "[Math] Is 29 a prime number?", correct: "Yes", distractors: ["No", "Only in geometry", "Depends on base"] },
+            { q: "[Science] Body system breakdown of nutrients for energy?", correct: "Digestive System", distractors: ["Circulatory System", "Skeletal System", "Excretory System"] },
+            { q: "[Science] Central muscular organ pumping blood?", correct: "Heart", distractors: ["Lungs", "Brain", "Kidney"] },
+            { q: "[Science] Pure water freezing point in Celsius?", correct: "0°C", distractors: ["100°C", "10°C", "-4°C"] },
+            { q: "[Science] Force pulling objects toward Earth's center?", correct: "Gravity", distractors: ["Friction", "Magnetism", "Tension"] },
+            { q: "[Science] Soil type retaining the highest water amount?", correct: "Clay", distractors: ["Sand", "Loam", "Gravel"] }
+          ],
+          // Set 2
+          [
+            { q: "[Math] Solve: 5² - 3 × 4", correct: "13", distractors: ["88", "16", "17"] },
+            { q: "[Math] Add fractions: 1/4 + 2/3", correct: "11/12", distractors: ["3/7", "3/12", "8/12"] },
+            { q: "[Math] Volume of prism 5m by 5m by 2m?", correct: "50 m³", distractors: ["25 m³", "40 m³", "60 m³"] },
+            { q: "[Math] Calculate 15% of 200", correct: "30", distractors: ["15", "20", "45"] },
+            { q: "[Math] Is 31 a prime number?", correct: "Yes", distractors: ["No", "Composite number", "Even number"] },
+            { q: "[Science] Body system taking in oxygen and expelling CO₂?", correct: "Respiratory System", distractors: ["Digestive System", "Nervous System", "Endocrine System"] },
+            { q: "[Science] Organ responsible for detoxifying chemicals?", correct: "Liver", distractors: ["Stomach", "Heart", "Spleen"] },
+            { q: "[Science] Boiling point of water at sea level?", correct: "100°C", distractors: ["0°C", "50°C", "212°C"] },
+            { q: "[Science] Resistance force when two surfaces rub?", correct: "Friction", distractors: ["Inertia", "Gravity", "Velocity"] },
+            { q: "[Science] Ideal agricultural soil mixture of sand, silt, and clay?", correct: "Loam", distractors: ["Peat", "Chalk", "Silt alone"] }
+          ],
+          // Set 3
+          [
+            { q: "[Math] Solve: 4² + 2³", correct: "24", distractors: ["20", "14", "32"] },
+            { q: "[Math] Add fractions: 3/8 + 1/2", correct: "7/8", distractors: ["4/10", "5/8", "1/2"] },
+            { q: "[Math] Volume of rectangular box 10cm x 2cm x 4cm?", correct: "80 cm³", distractors: ["16 cm³", "60 cm³", "40 cm³"] },
+            { q: "[Math] Calculate 25% of 160", correct: "40", distractors: ["30", "50", "25"] },
+            { q: "[Math] Is 37 a prime number?", correct: "Yes", distractors: ["No", "Composite", "Divisible by 3"] },
+            { q: "[Science] System that transports oxygen and nutrients via blood?", correct: "Circulatory System", distractors: ["Lymphatic System", "Nervous System", "Skeletal System"] },
+            { q: "[Science] Control center of the nervous system?", correct: "Brain", distractors: ["Spinal Cord", "Heart", "Nerves"] },
+            { q: "[Science] Phase change directly from solid to gas?", correct: "Sublimation", distractors: ["Evaporation", "Deposition", "Melting"] },
+            { q: "[Science] Energy possessed by an object in motion?", correct: "Kinetic Energy", distractors: ["Potential Energy", "Thermal Energy", "Chemical Energy"] },
+            { q: "[Science] Soil texture with the largest particle size?", correct: "Sand", distractors: ["Clay", "Silt", "Humus"] }
+          ],
+          // Set 4
+          [
+            { q: "[Math] Solve: 2⁴ - 5 × 2", correct: "6", distractors: ["12", "22", "8"] },
+            { q: "[Math] Subtract fractions: 5/6 - 1/3", correct: "1/2", distractors: ["4/3", "2/3", "1/6"] },
+            { q: "[Math] Volume of a cube with edge length 3 cm?", correct: "27 cm³", distractors: ["9 cm³", "18 cm³", "36 cm³"] },
+            { q: "[Math] Calculate 50% of 420", correct: "210", distractors: ["200", "220", "105"] },
+            { q: "[Math] Is 41 a prime number?", correct: "Yes", distractors: ["No", "Divisible by 7", "Even"] },
+            { q: "[Science] System protecting organs and giving shape?", correct: "Skeletal System", distractors: ["Muscular System", "Integumentary System", "Digestive System"] },
+            { q: "[Science] Gland producing insulin to regulate blood sugar?", correct: "Pancreas", distractors: ["Thyroid", "Adrenal", "Gallbladder"] },
+            { q: "[Science] Phase change directly from gas to solid?", correct: "Deposition", distractors: ["Sublimation", "Condensation", "Freezing"] },
+            { q: "[Science] Stored energy based on position?", correct: "Potential Energy", distractors: ["Kinetic Energy", "Radiant Energy", "Sound Energy"] },
+            { q: "[Science] Silt particles are sized between sand and...", correct: "Clay", distractors: ["Gravel", "Pebbles", "Boulders"] }
+          ]
+        ],
+        6: [
+          // Set 1
+          [
+            { q: "[Math] Simplify ratio 12:18", correct: "2:3", distractors: ["3:4", "4:6", "1:2"] },
+            { q: "[Math] Solve proportion: 3/4 = x/20", correct: "15", distractors: ["12", "16", "10"] },
+            { q: "[Math] Calculate: -12 + 7", correct: "-5", distractors: ["5", "-19", "19"] },
+            { q: "[Math] Area of circle with r=5 cm (π≈3.14)", correct: "78.5 cm²", distractors: ["31.4 cm²", "25 cm²", "15.7 cm²"] },
+            { q: "[Math] Multiply decimals: 3.5 × 1.2", correct: "4.2", distractors: ["3.7", "4.5", "4.12"] },
+            { q: "[Science] Major framework including skull and ribs?", correct: "Skeletal System", distractors: ["Muscular System", "Nervous System", "Endocrine System"] },
+            { q: "[Science] Force opposing relative motion between surfaces?", correct: "Friction", distractors: ["Inertia", "Gravity", "Tension"] },
+            { q: "[Science] Biome characterized by high rainfall and biodiversity?", correct: "Tropical Rainforest", distractors: ["Taiga", "Tundra", "Desert"] },
+            { q: "[Science] Lowest atmospheric layer where weather occurs?", correct: "Troposphere", distractors: ["Stratosphere", "Mesosphere", "Thermosphere"] },
+            { q: "[Science] Day and night occur due to Earth's...", correct: "Rotation", distractors: ["Revolution", "Precession", "Tilt"] }
+          ],
+          // Set 2
+          [
+            { q: "[Math] Simplify ratio 15:25", correct: "3:5", distractors: ["2:5", "3:4", "1:2"] },
+            { q: "[Math] Solve proportion: 2/5 = x/30", correct: "12", distractors: ["10", "15", "20"] },
+            { q: "[Math] Calculate: -15 + 20", correct: "5", distractors: ["-5", "35", "-35"] },
+            { q: "[Math] Area of circle with r=10 cm (π≈3.14)", correct: "314 cm²", distractors: ["62.8 cm²", "100 cm²", "31.4 cm²"] },
+            { q: "[Math] Multiply decimals: 2.5 × 1.4", correct: "3.5", distractors: ["3.1", "3.9", "4.0"] },
+            { q: "[Science] Muscle type working automatically without control?", correct: "Involuntary Muscle", distractors: ["Voluntary Muscle", "Skeletal Muscle", "Rough Muscle"] },
+            { q: "[Science] Tendency of an object to resist change in motion?", correct: "Inertia", distractors: ["Velocity", "Acceleration", "Momentum"] },
+            { q: "[Science] Arid biome with extreme temps and little rain?", correct: "Desert", distractors: ["Savanna", "Grassland", "Forest"] },
+            { q: "[Science] Atmospheric layer housing the protective ozone layer?", correct: "Stratosphere", distractors: ["Troposphere", "Mesosphere", "Exosphere"] },
+            { q: "[Science] Seasons on Earth are driven by its orbit and...", correct: "Axial Tilt", distractors: ["Distance to Sun", "Solar Flares", "Moon Phases"] }
+          ],
+          // Set 3
+          [
+            { q: "[Math] Simplify ratio 8:24", correct: "1:3", distractors: ["1:4", "2:3", "1:2"] },
+            { q: "[Math] Solve proportion: 5/6 = x/36", correct: "30", distractors: ["25", "32", "24"] },
+            { q: "[Math] Calculate: -8 - 14", correct: "-22", distractors: ["-6", "6", "22"] },
+            { q: "[Math] Circumference of circle with r=5 cm (π≈3.14)", correct: "31.4 cm", distractors: ["78.5 cm", "15.7 cm", "25 cm"] },
+            { q: "[Math] Divide decimals: 4.2 ÷ 0.6", correct: "7", distractors: ["0.7", "6", "8"] },
+            { q: "[Science] Organ system transmitting electrical nerve impulses?", correct: "Nervous System", distractors: ["Endocrine System", "Circulatory System", "Immune System"] },
+            { q: "[Science] Standard SI unit measuring force?", correct: "Newton", distractors: ["Joule", "Watt", "Pascal"] },
+            { q: "[Science] Treeless biome with permafrost subsoil layer?", correct: "Tundra", distractors: ["Taiga", "Chaparral", "Temperate Forest"] },
+            { q: "[Science] Hottest layer of Earth's atmosphere?", correct: "Thermosphere", distractors: ["Troposphere", "Stratosphere", "Mesosphere"] },
+            { q: "[Science] How long does Earth take for one complete rotation?", correct: "24 Hours", distractors: ["365 Days", "12 Hours", "30 Days"] }
+          ],
+          // Set 4
+          [
+            { q: "[Math] Simplify ratio 14:42", correct: "1:3", distractors: ["1:2", "2:5", "1:4"] },
+            { q: "[Math] Solve proportion: 4/7 = x/28", correct: "16", distractors: ["12", "20", "14"] },
+            { q: "[Math] Calculate: -25 + (-15)", correct: "-40", distractors: ["-10", "10", "40"] },
+            { q: "[Math] Circumference of circle with d=10 cm (π≈3.14)", correct: "31.4 cm", distractors: ["62.8 cm", "78.5 cm", "10 cm"] },
+            { q: "[Math] Divide decimals: 6.3 ÷ 0.9", correct: "7", distractors: ["0.7", "9", "6"] },
+            { q: "[Science] Outer barrier system including skin and hair?", correct: "Integumentary System", distractors: ["Excretory System", "Immune System", "Lymphatic System"] },
+            { q: "[Science] Mechanical work equals Force multiplied by...", correct: "Distance", distractors: ["Time", "Mass", "Velocity"] },
+            { q: "[Science] Tropical grassland featuring scattered trees?", correct: "Savanna", distractors: ["Steppe", "Pampa", "Taiga"] },
+            { q: "[Science] Layer where most meteorites burn up upon entry?", correct: "Mesosphere", distractors: ["Stratosphere", "Troposphere", "Exosphere"] },
+            { q: "[Science] One full orbit of Earth around Sun requires roughly...", correct: "365.25 Days", distractors: ["30 Days", "24 Hours", "100 Days"] }
+          ]
+        ],
+        7: [
+          // Set 1
+          [
+            { q: "[Math] Find intersection: A={1,2,3,4}, B={3,4,5,6}, A∩B", correct: "{3, 4}", distractors: ["{1, 2, 5, 6}", "{1, 2, 3, 4, 5, 6}", "{ }"] },
+            { q: "[Math] Evaluate: |-18| - |7|", correct: "11", distractors: ["25", "-25", "-11"] },
+            { q: "[Math] Translate to algebra: 'Five more than twice x'", correct: "2x + 5", distractors: ["5x + 2", "x + 10", "2(x + 5)"] },
+            { q: "[Math] Solve linear equation: 3x - 4 = 11", correct: "x = 5", distractors: ["x = 3", "x = 4", "x = 6"] },
+            { q: "[Math] What is the sum of angles forming a linear pair?", correct: "180°", distractors: ["90°", "360°", "45°"] },
+            { q: "[Science] Eyepiece is 10x and objective is 40x. Total magnification?", correct: "400x", distractors: ["50x", "40x", "100x"] },
+            { q: "[Science] Fundamental structural and functional unit of life?", correct: "Cell", distractors: ["Atom", "Tissue", "Organ"] },
+            { q: "[Science] Dissolving table salt completely in water creates a...", correct: "Homogeneous Mixture", distractors: ["Heterogeneous Mixture", "Compound", "Element"] },
+            { q: "[Science] Group of same-species individuals living in an area?", correct: "Population", distractors: ["Community", "Ecosystem", "Biosphere"] },
+            { q: "[Science] Imaginary baseline line at 0° latitude?", correct: "Equator", distractors: ["Prime Meridian", "Tropic of Cancer", "International Date Line"] }
+          ],
+          // Set 2
+          [
+            { q: "[Math] Find union: A={1,2}, B={3,4}, A∪B", correct: "{1, 2, 3, 4}", distractors: ["{ }", "{1, 3}", "{2, 4}"] },
+            { q: "[Math] Evaluate: |-25| + |-5|", correct: "30", distractors: ["-30", "20", "-20"] },
+            { q: "[Math] Translate to algebra: 'Three less than 4x'", correct: "4x - 3", distractors: ["3 - 4x", "4(x - 3)", "x - 12"] },
+            { q: "[Math] Solve equation: 2x + 8 = 20", correct: "x = 6", distractors: ["x = 5", "x = 7", "x = 8"] },
+            { q: "[Math] Complementary angles sum up to...", correct: "90°", distractors: ["180°", "360°", "45°"] },
+            { q: "[Science] Eyepiece 10x and objective 10x yield total power of...", correct: "100x", distractors: ["20x", "10x", "200x"] },
+            { q: "[Science] Membrane-bound structure holding cellular DNA?", correct: "Nucleus", distractors: ["Ribosome", "Cytoplasm", "Vacuole"] },
+            { q: "[Science] Mixture like oil and water with visible separation?", correct: "Heterogeneous Mixture", distractors: ["Homogeneous Mixture", "Solution", "Element"] },
+            { q: "[Science] All interacting populations in a designated area?", correct: "Community", distractors: ["Population", "Species", "Organism"] },
+            { q: "[Science] Primary baseline line located at 0° longitude?", correct: "Prime Meridian", distractors: ["Equator", "Tropic of Capricorn", "Antarctic Circle"] }
+          ],
+          // Set 3
+          [
+            { q: "[Math] How many elements exist in an empty/null set?", correct: "0", distractors: ["1", "Infinite", "Undefined"] },
+            { q: "[Math] Evaluate: |-12| × |-3|", correct: "36", distractors: ["-36", "15", "-15"] },
+            { q: "[Math] Translate: 'Half of x plus 7'", correct: "x/2 + 7", distractors: ["(x + 7)/2", "2x + 7", "x/14"] },
+            { q: "[Math] Solve equation: 5x - 15 = 35", correct: "x = 10", distractors: ["x = 4", "x = 8", "x = 12"] },
+            { q: "[Math] Supplementary angles sum up to...", correct: "180°", distractors: ["90°", "360°", "270°"] },
+            { q: "[Science] Cellular organelle generating energy via ATP?", correct: "Mitochondria", distractors: ["Golgi Body", "Lysosome", "Endoplasmic Reticulum"] },
+            { q: "[Science] Outer rigid cell wall structure is present in...", correct: "Plant Cells", distractors: ["Animal Cells", "Human Cells", "Blood Cells"] },
+            { q: "[Science] Pure substance made of only one specific atom type?", correct: "Element", distractors: ["Compound", "Solution", "Mixture"] },
+            { q: "[Science] System formed by biotic communities and abiotic factors?", correct: "Ecosystem", distractors: ["Biome", "Population", "Habitat"] },
+            { q: "[Science] Latitude line located at 23.5° North?", correct: "Tropic of Cancer", distractors: ["Tropic of Capricorn", "Equator", "Arctic Circle"] }
+          ],
+          // Set 4
+          [
+            { q: "[Math] Cardinality of set C = {a, b, c, d, e}?", correct: "5", distractors: ["4", "6", "26"] },
+            { q: "[Math] Evaluate: |-50| ÷ |2|", correct: "25", distractors: ["-25", "100", "-100"] },
+            { q: "[Math] Translate: 'Double the sum of x and 3'", correct: "2(x + 3)", distractors: ["2x + 3", "x + 6", "2x + 6"] },
+            { q: "[Math] Solve equation: 4x + 12 = 0", correct: "x = -3", distractors: ["x = 3", "x = -4", "x = 0"] },
+            { q: "[Math] Angles opposite each other when lines intersect are...", correct: "Equal / Congruent", distractors: ["Complementary", "Supplementary", "Perpendicular"] },
+            { q: "[Science] Tiny organelle responsible for protein synthesis?", correct: "Ribosome", distractors: ["Vacuole", "Centriole", "Mitochondria"] },
+            { q: "[Science] Jelly-like fluid holding organelle structures inside cell?", correct: "Cytoplasm", distractors: ["Plasma", "Nucleoplasm", "Sap"] },
+            { q: "[Science] Substance composed of two or more elements chemically combined?", correct: "Compound", distractors: ["Element", "Homogeneous Mixture", "Alloy"] },
+            { q: "[Science] The global sum of all Earth ecosystems is the...", correct: "Biosphere", distractors: ["Lithosphere", "Atmosphere", "Hydrosphere"] },
+            { q: "[Science] Latitude line located at 23.5° South?", correct: "Tropic of Capricorn", distractors: ["Tropic of Cancer", "Equator", "Antarctic Circle"] }
+          ]
+        ],
+        8: [
+          // Set 1
+          [
+            { q: "[Math] What is the slope of line y = -4x + 9?", correct: "-4", distractors: ["9", "4", "-9"] },
+            { q: "[Math] Factor the binomial: x² - 16", correct: "(x + 4)(x - 4)", distractors: ["(x - 4)²", "(x + 16)(x - 1)", "(x + 8)(x - 2)"] },
+            { q: "[Math] Contrapositive statement of 'If P, then Q'?", correct: "If not Q, then not P", distractors: ["If Q, then P", "If not P, then not Q", "If P, then not Q"] },
+            { q: "[Math] Right triangle with legs 6 & 8. Hypotenuse length?", correct: "10", distractors: ["12", "14", "100"] },
+            { q: "[Math] Range of relation {(1,2), (3,4), (5,6)}?", correct: "{2, 4, 6}", distractors: ["{1, 3, 5}", "{1, 2, 3, 4, 5, 6}", "{1, 5}"] },
+            { q: "[Science] Newton's 1st Law states motion changes require an...", correct: "Unbalanced Force", distractors: ["Balanced Force", "Internal Force", "Zero Net Force"] },
+            { q: "[Science] Main organ absorbing water-soluble nutrients into blood?", correct: "Small Intestine", distractors: ["Stomach", "Large Intestine", "Esophagus"] },
+            { q: "[Science] Chemical symbol for Sodium?", correct: "Na", distractors: ["So", "Sd", "K"] },
+            { q: "[Science] Tropical cyclones entering the PH area originate in...", correct: "Pacific Ocean", distractors: ["Indian Ocean", "South China Sea", "Atlantic Ocean"] },
+            { q: "[Science] Fastest seismic wave produced by earthquakes?", correct: "P-wave (Primary)", distractors: ["S-wave", "Love wave", "Rayleigh wave"] }
+          ],
+          // Set 2
+          [
+            { q: "[Math] What is the slope of line y = 3x - 5?", correct: "3", distractors: ["-5", "-3", "5"] },
+            { q: "[Math] Factor the binomial: x² - 25", correct: "(x + 5)(x - 5)", distractors: ["(x - 5)²", "(x + 25)(x - 1)", "(x - 10)(x + 2.5)"] },
+            { q: "[Math] Converse statement of 'If P, then Q'?", correct: "If Q, then P", distractors: ["If not Q, then not P", "If not P, then not Q", "If P, then not Q"] },
+            { q: "[Math] Right triangle with legs 5 & 12. Hypotenuse length?", correct: "13", distractors: ["17", "15", "169"] },
+            { q: "[Math] Domain of relation {(1,2), (3,4), (5,6)}?", correct: "{1, 3, 5}", distractors: ["{2, 4, 6}", "{1, 2, 3, 4, 5, 6}", "{3, 5}"] },
+            { q: "[Science] Formula expressing Newton's 2nd Law of Motion?", correct: "F = ma", distractors: ["E = mc²", "P = IV", "V = IR"] },
+            { q: "[Science] Organ absorbing remaining water from indigestible food?", correct: "Large Intestine", distractors: ["Small Intestine", "Stomach", "Pancreas"] },
+            { q: "[Science] Chemical symbol for Potassium?", correct: "K", distractors: ["Po", "Pt", "Na"] },
+            { q: "[Science] Scale measuring magnitude based on seismic energy?", correct: "Moment Magnitude / Richter", distractors: ["Mercalli Scale", "Celsius Scale", "Beaufort Scale"] },
+            { q: "[Science] Slower seismic wave that moves rock side to side?", correct: "S-wave (Secondary)", distractors: ["P-wave", "Sound wave", "Light wave"] }
+          ],
+          // Set 3
+          [
+            { q: "[Math] Find y-intercept of equation y = 2x + 7", correct: "7", distractors: ["2", "-7", "3.5"] },
+            { q: "[Math] Factor expression: x² - 81", correct: "(x + 9)(x - 9)", distractors: ["(x - 9)²", "(x + 81)(x - 1)", "(x + 3)(x - 27)"] },
+            { q: "[Math] Inverse statement of 'If P, then Q'?", correct: "If not P, then not Q", distractors: ["If Q, then P", "If not Q, then not P", "If P, then not Q"] },
+            { q: "[Math] Right triangle with legs 9 & 12. Hypotenuse length?", correct: "15", distractors: ["21", "18", "14"] },
+            { q: "[Math] Is set {(1,2), (1,3), (2,4)} a valid function?", correct: "No", distractors: ["Yes", "Only if linear", "Always true"] },
+            { q: "[Science] Newton's 3rd Law: Every action force generates an...", correct: "Equal and Opposite Reaction", distractors: ["Unbalanced Force", "Equal and Same Direction Force", "Inertial Motion"] },
+            { q: "[Science] Salivary enzyme initiating carbohydrate breakdown?", correct: "Amylase", distractors: ["Pepsin", "Lipase", "Trypsin"] },
+            { q: "[Science] Chemical symbol for Gold?", correct: "Au", distractors: ["Ag", "Go", "Gd"] },
+            { q: "[Science] Underground point where earthquake fault slipping originates?", correct: "Focus / Hypocenter", distractors: ["Epicenter", "Fault Line", "Crust"] },
+            { q: "[Science] Point on Earth's surface directly above focus?", correct: "Epicenter", distractors: ["Hypocenter", "Fault line", "Core"] }
+          ],
+          // Set 4
+          [
+            { q: "[Math] What is the slope of a horizontal line?", correct: "0", distractors: ["1", "Undefined", "-1"] },
+            { q: "[Math] Factor quadratic expression: x² + 5x + 6", correct: "(x + 2)(x + 3)", distractors: ["(x + 1)(x + 6)", "(x - 2)(x - 3)", "(x + 5)(x + 1)"] },
+            { q: "[Math] If a conditional statement is true, its contrapositive is...", correct: "Always True", distractors: ["Always False", "Sometimes True", "Undefined"] },
+            { q: "[Math] Right triangle with legs 8 & 15. Hypotenuse length?", correct: "17", distractors: ["23", "19", "289"] },
+            { q: "[Math] Is relation {(1,2), (2,2), (3,2)} a function?", correct: "Yes", distractors: ["No", "Only if x=0", "Undefined"] },
+            { q: "[Science] Standard SI unit of electric current?", correct: "Ampere", distractors: ["Volt", "Ohm", "Watt"] },
+            { q: "[Science] Organ storing bile produced by the liver?", correct: "Gallbladder", distractors: ["Pancreas", "Stomach", "Spleen"] },
+            { q: "[Science] Chemical symbol for Iron?", correct: "Fe", distractors: ["Ir", "Fe2", "In"] },
+            { q: "[Science] Fault type where blocks slide past horizontally?", correct: "Strike-slip fault", distractors: ["Normal fault", "Reverse fault", "Thrust fault"] },
+            { q: "[Science] Seismic wave moving along Earth's outer surface?", correct: "Surface wave", distractors: ["Body wave", "Primary wave", "Secondary wave"] }
+          ]
+        ],
+        9: [
+          // Set 1
+          [
+            { q: "[Math] Solve roots for quadratic: x² - 25 = 0", correct: "x = ±5", distractors: ["x = 5 only", "x = 25", "x = ±25"] },
+            { q: "[Math] Direct variation y=kx. If y=12 when x=3, find k", correct: "4", distractors: ["36", "3", "1/4"] },
+            { q: "[Math] Simplify radical expression: √(50)", correct: "5√2", distractors: ["2√5", "10√5", "25√2"] },
+            { q: "[Math] Trigonometric ratio for Sin(θ) in right triangle?", correct: "Opposite / Hypotenuse", distractors: ["Adjacent / Hypotenuse", "Opposite / Adjacent", "Hypotenuse / Opposite"] },
+            { q: "[Math] What is Tan(45°)?", correct: "1", distractors: ["0", "0.5", "√3"] },
+            { q: "[Science] Primary organelle performing photosynthesis?", correct: "Chloroplast", distractors: ["Mitochondria", "Golgi Apparatus", "Vacuole"] },
+            { q: "[Science] Chemical bond involving electron sharing?", correct: "Covalent Bond", distractors: ["Ionic Bond", "Metallic Bond", "Hydrogen Bond"] },
+            { q: "[Science] Gas contributing most to global greenhouse warming?", correct: "Carbon Dioxide (CO₂)", distractors: ["Oxygen", "Nitrogen", "Argon"] },
+            { q: "[Science] Normal total chromosome count in human somatic cells?", correct: "46", distractors: ["23", "44", "48"] },
+            { q: "[Science] Volcano constructed from alternating lava and ash layers?", correct: "Composite / Stratovolcano", distractors: ["Shield Volcano", "Cinder Cone", "Fissure"] }
+          ],
+          // Set 2
+          [
+            { q: "[Math] Solve roots for equation: x² - 36 = 0", correct: "x = ±6", distractors: ["x = 6 only", "x = 36", "x = ±18"] },
+            { q: "[Math] Inverse variation y=k/x. If y=4 when x=3, find k", correct: "12", distractors: ["4/3", "3/4", "7"] },
+            { q: "[Math] Simplify radical expression: √(72)", correct: "6√2", distractors: ["2√6", "3√8", "12√2"] },
+            { q: "[Math] Trigonometric ratio for Cos(θ) in right triangle?", correct: "Adjacent / Hypotenuse", distractors: ["Opposite / Hypotenuse", "Opposite / Adjacent", "Adjacent / Opposite"] },
+            { q: "[Math] Value of Sin(30°)?", correct: "0.5", distractors: ["1", "√3/2", "0"] },
+            { q: "[Science] Energy molecule manufactured during cellular respiration?", correct: "ATP", distractors: ["DNA", "RNA", "Glucose only"] },
+            { q: "[Science] Chemical bond involving transfer of electrons?", correct: "Ionic Bond", distractors: ["Covalent Bond", "Metallic Bond", "Polar Bond"] },
+            { q: "[Science] Atmospheric gas comprising roughly 78% of air volume?", correct: "Nitrogen", distractors: ["Oxygen", "CO₂", "Argon"] },
+            { q: "[Science] Chromosome count in human haploid gamete (egg/sperm)?", correct: "23", distractors: ["46", "22", "44"] },
+            { q: "[Science] Volcano with broad, gentle sloping sides formed by basaltic lava?", correct: "Shield Volcano", distractors: ["Cinder Cone", "Stratovolcano", "Caldera"] }
+          ],
+          // Set 3
+          [
+            { q: "[Math] Solve roots for equation: x² - 49 = 0", correct: "x = ±7", distractors: ["x = 7 only", "x = ±14", "x = 49"] },
+            { q: "[Math] Joint variation y=kxz. If y=24 when x=2, z=3, find k", correct: "4", distractors: ["6", "12", "2"] },
+            { q: "[Math] Simplify radical expression: √(32)", correct: "4√2", distractors: ["2√4", "8√2", "16√2"] },
+            { q: "[Math] Trigonometric ratio for Tan(θ) in right triangle?", correct: "Opposite / Adjacent", distractors: ["Adjacent / Opposite", "Opposite / Hypotenuse", "Adjacent / Hypotenuse"] },
+            { q: "[Math] Value of Cos(60°)?", correct: "0.5", distractors: ["√3/2", "1", "0"] },
+            { q: "[Science] Primary organelle where cellular respiration occurs?", correct: "Mitochondria", distractors: ["Chloroplast", "Ribosome", "Nucleus"] },
+            { q: "[Science] Type of chemical bond binding metal atoms together?", correct: "Metallic Bond", distractors: ["Ionic Bond", "Covalent Bond", "Hydrogen Bond"] },
+            { q: "[Science] Molecular formula representing ozone?", correct: "O₃", distractors: ["O₂", "CO₂", "H₂O"] },
+            { q: "[Science] Nuclear division process yielding 4 haploid daughter cells?", correct: "Meiosis", distractors: ["Mitosis", "Binary Fission", "Budding"] },
+            { q: "[Science] Volcano type built from steep piles of ejected cinders?", correct: "Cinder Cone", distractors: ["Shield Volcano", "Stratovolcano", "Dome"] }
+          ],
+          // Set 4
+          [
+            { q: "[Math] If discriminant b² - 4ac > 0, roots are...", correct: "Real and unequal", distractors: ["Real and equal", "Imaginary", "Undefined"] },
+            { q: "[Math] Simplify radical expression: √(98)", correct: "7√2", distractors: ["2√7", "14√2", "49√2"] },
+            { q: "[Math] Value of Sin(90°)?", correct: "1", distractors: ["0", "0.5", "Undefined"] },
+            { q: "[Math] Value of Cos(0°)?", correct: "1", distractors: ["0", "-1", "0.5"] },
+            { q: "[Math] Fundamental identity: sin²(θ) + cos²(θ) = ?", correct: "1", distractors: ["0", "2", "tan(θ)"] },
+            { q: "[Science] Number of valence electrons in a neutral Carbon atom?", correct: "4", distractors: ["2", "6", "8"] },
+            { q: "[Science] Greenhouse effect traps which type of radiated thermal heat?", correct: "Infrared Radiation", distractors: ["Ultraviolet Light", "Gamma Rays", "X-Rays"] },
+            { q: "[Science] Nuclear division process producing identical somatic cells?", correct: "Mitosis", distractors: ["Meiosis", "Fertilization", "Recombination"] },
+            { q: "[Science] Term for volcano that hasn't erupted recently but could in future?", correct: "Dormant Volcano", distractors: ["Active Volcano", "Extinct Volcano", "Eroded Volcano"] },
+            { q: "[Science] Subatomic particle with negative electric charge?", correct: "Electron", distractors: ["Proton", "Neutron", "Positron"] }
+          ]
+        ]
+      };
+
+      for (let gradeNum = 1; gradeNum <= 9; gradeNum++) {
+        const setsForGrade = rawQuestionsByGrade[gradeNum];
+        setsForGrade.forEach((setQuestions, setIndex) => {
+          const setNum = setIndex + 1;
+          setQuestions.forEach((item) => {
+            data.push({
+              grade: gradeNum,
+              setNum: setNum,
+              question: item.q,
+              correctAnswerText: item.correct,
+              distractors: item.distractors,
+              explanation: `The correct answer is ${item.correct}.`
+            });
+          });
+        });
+      }
+
+      return data;
+    }
+
+    const seedDataset = generateComprehensiveQuestionDataset();
+
+    // Auto-seed Firestore
+    async function seedFirestoreIfEmpty() {
+      try {
+        const testSnapshot = await getDocs(query(collection(db, "questions")));
+        if (testSnapshot.empty) {
+          console.log("Firestore 'questions' collection is empty. Uploading 360 unique questions...");
+          for (const item of seedDataset) {
+            await addDoc(collection(db, "questions"), item);
+          }
+          console.log("Firestore successfully populated!");
+        }
+      } catch (err) {
+        console.error("Auto-seed error:", err);
+      }
+    }
+
+    seedFirestoreIfEmpty();
+
+    // Random Set selector (1 in 4 chance)
+    function getRandomSetNumber() {
+      return Math.floor(Math.random() * 4) + 1;
+    }
+
+    // Prepare question item with randomly shuffled answer options
+    function prepareQuestionWithRandomOptions(rawItem) {
+      const allOptions = [rawItem.correctAnswerText, ...rawItem.distractors];
+      
+      // Shuffle options array using Fisher-Yates
+      shuffleArray(allOptions);
+
+      const correctIndex = allOptions.indexOf(rawItem.correctAnswerText);
+
+      return {
+        id: rawItem.id || Math.random().toString(),
+        grade: rawItem.grade,
+        setNum: rawItem.setNum,
+        question: rawItem.question,
+        options: allOptions,
+        correct: correctIndex,
+        explanation: rawItem.explanation
+      };
+    }
+
+    // Fetch questions for specific grade & random set
+    async function getRandomQuestionsForGrade(gradeNum, chosenSetNum) {
+      try {
+        const q = query(
+          collection(db, "questions"), 
+          where("grade", "==", Number(gradeNum)),
+          where("setNum", "==", Number(chosenSetNum))
+        );
+        
+        const querySnapshot = await getDocs(q);
+        let questionPool = [];
+
+        querySnapshot.forEach((doc) => {
+          questionPool.push({ id: doc.id, ...doc.data() });
+        });
+
+        // Fallback to local memory if Firestore query returns empty
+        if (questionPool.length === 0) {
+          questionPool = seedDataset.filter(q => q.grade === gradeNum && q.setNum === chosenSetNum);
+        }
+
+        // Prepare items and randomize option order
+        const formattedQuestions = questionPool.map(item => prepareQuestionWithRandomOptions(item));
+
+        // Randomize the order/placement of all questions every session
+        return shuffleArray(formattedQuestions);
+      } catch (error) {
+        console.error("Error fetching questions from Firestore:", error);
+        const fallbackPool = seedDataset.filter(q => q.grade === gradeNum && q.setNum === chosenSetNum);
+        const formattedFallback = fallbackPool.map(item => prepareQuestionWithRandomOptions(item));
+        return shuffleArray(formattedFallback);
+      }
+    }
+
+    // State
+    let selectedLevel = "";
+    let selectedGrade = "";
+    let activeSetNum = 1;
+    let currentQuestions = [];
     let currentQuestion = 0;
     let score = 0;
     let answered = false;
 
+    // UI Elements
     const welcomeScreen = document.getElementById("welcome-screen");
+    const levelScreen = document.getElementById("level-screen");
+    const gradeScreen = document.getElementById("grade-screen");
     const quizScreen = document.getElementById("quiz-screen");
     const resultScreen = document.getElementById("result-screen");
 
+    const gradeHeading = document.getElementById("grade-heading");
+    const gradeOptions = document.getElementById("grade-options");
+    const gradeBadge = document.getElementById("grade-badge");
     const questionCounter = document.getElementById("question-counter");
     const progressBar = document.getElementById("progress-bar");
     const questionText = document.getElementById("question-text");
@@ -457,28 +1095,87 @@
     const incorrectCount = document.getElementById("incorrect-count");
     const percentage = document.getElementById("percentage");
     const resultMessage = document.getElementById("result-message");
+    const resultGradeTag = document.getElementById("result-grade-tag");
 
     function showScreen(screenToShow) {
-      [welcomeScreen, quizScreen, resultScreen].forEach(screen => {
+      [welcomeScreen, levelScreen, gradeScreen, quizScreen, resultScreen].forEach(screen => {
         screen.classList.remove("active");
       });
       screenToShow.classList.add("active");
     }
 
-    function startQuiz() {
+    document.getElementById("start-button").addEventListener("click", () => {
+      showScreen(levelScreen);
+    });
+
+    document.getElementById("btn-elem").addEventListener("click", () => selectLevel('elem'));
+    document.getElementById("btn-hs").addEventListener("click", () => selectLevel('hs'));
+
+    function selectLevel(level) {
+      selectedLevel = level;
+      gradeOptions.innerHTML = "";
+
+      let grades = [];
+      if (level === 'elem') {
+        gradeHeading.textContent = "Elementary Grades";
+        grades = [
+          { num: 1, label: "Grade 1" },
+          { num: 2, label: "Grade 2" },
+          { num: 3, label: "Grade 3" },
+          { num: 4, label: "Grade 4" },
+          { num: 5, label: "Grade 5" },
+          { num: 6, label: "Grade 6" }
+        ];
+      } else {
+        gradeHeading.textContent = "High School Grades";
+        grades = [
+          { num: 7, label: "Grade 7" },
+          { num: 8, label: "Grade 8" },
+          { num: 9, label: "Grade 9" }
+        ];
+      }
+
+      grades.forEach(g => {
+        const btn = document.createElement("button");
+        btn.className = "button";
+        btn.textContent = g.label;
+        btn.onclick = () => startQuizForGrade(g.num, g.label);
+        gradeOptions.appendChild(btn);
+      });
+
+      showScreen(gradeScreen);
+    }
+
+    async function startQuizForGrade(gradeNum, label) {
+      selectedGrade = label;
+      
+      // Pick random question set (1-4) secretly
+      activeSetNum = getRandomSetNumber();
+
+      questionText.textContent = `Fetching questions...`;
+      answersContainer.innerHTML = "";
+      feedback.textContent = "";
+      feedback.className = "feedback";
+      nextButton.hidden = true;
+      showScreen(quizScreen);
+
+      // Query database & apply randomized question order + option shuffling
+      currentQuestions = await getRandomQuestionsForGrade(gradeNum, activeSetNum);
+
       currentQuestion = 0;
       score = 0;
       answered = false;
-      showScreen(quizScreen);
+
+      gradeBadge.textContent = `${selectedGrade}`;
       loadQuestion();
     }
 
     function loadQuestion() {
-      const q = questions[currentQuestion];
+      const q = currentQuestions[currentQuestion];
 
       answered = false;
-      questionCounter.textContent = `Q ${String(currentQuestion + 1).padStart(2, '0')} / ${questions.length}`;
-      progressBar.style.width = `${((currentQuestion + 1) / questions.length) * 100}%`;
+      questionCounter.textContent = `Q ${String(currentQuestion + 1).padStart(2, '0')} / ${currentQuestions.length}`;
+      progressBar.style.width = `${((currentQuestion + 1) / currentQuestions.length) * 100}%`;
       questionText.textContent = q.question;
 
       answersContainer.innerHTML = "";
@@ -504,7 +1201,7 @@
       if (answered) return;
 
       answered = true;
-      const q = questions[currentQuestion];
+      const q = currentQuestions[currentQuestion];
       const answerButtons = document.querySelectorAll(".answer");
 
       answerButtons.forEach(btn => {
@@ -525,14 +1222,14 @@
       }
 
       nextButton.hidden = false;
-      nextButton.textContent = (currentQuestion === questions.length - 1) ? "View Results →" : "Next Question →";
+      nextButton.textContent = (currentQuestion === currentQuestions.length - 1) ? "View Results →" : "Next Question →";
     }
 
     function nextQuestion() {
       if (!answered) return;
 
       currentQuestion++;
-      if (currentQuestion < questions.length) {
+      if (currentQuestion < currentQuestions.length) {
         loadQuestion();
       } else {
         showResults();
@@ -540,29 +1237,33 @@
     }
 
     function showResults() {
-      const total = questions.length;
+      const total = currentQuestions.length;
       const incorrect = total - score;
       const pct = Math.round((score / total) * 100);
 
+      resultGradeTag.textContent = `${selectedGrade}`;
       scoreDisplay.textContent = `${score}/${total}`;
       correctCount.textContent = score;
       incorrectCount.textContent = incorrect;
       percentage.textContent = `${pct}%`;
 
       if (pct === 100) {
-        resultMessage.textContent = "Perfect score.";
+        resultMessage.textContent = "Perfect score!";
+        triggerConfetti();
       } else if (pct >= 70) {
-        resultMessage.textContent = "Good score.";
+        resultMessage.textContent = "Great job!";
+        triggerConfetti();
       } else {
-        resultMessage.textContent = "Fail.";
+        resultMessage.textContent = "Keep practicing!";
       }
 
       showScreen(resultScreen);
     }
 
-    document.getElementById("start-button").addEventListener("click", startQuiz);
     nextButton.addEventListener("click", nextQuestion);
-    document.getElementById("restart-button").addEventListener("click", startQuiz);
+    document.getElementById("restart-button").addEventListener("click", () => {
+      showScreen(welcomeScreen);
+    });
   </script>
 </body>
 </html>
